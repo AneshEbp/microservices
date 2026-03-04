@@ -18,7 +18,7 @@ export class ProductController {
 
   // ------------------------------
   // Get a single product by ID (public)
-  // ------------------------------
+  // ------------------------------l9
 //   @Get(':id')
 @MessagePattern({cmd:'get_product_by_id'})
   async findOne(@Payload() id: string) {
