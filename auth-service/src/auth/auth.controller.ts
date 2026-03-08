@@ -1,17 +1,28 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  async register(@Body() body: { email: string; password: string }) {
-    return this.authService.register(body.email, body.password);
+  @MessagePattern({ cmd: 'register_user' })
+  async register(@Payload() data: { email: string; password: string }) {
+    try {
+      return await this.authService.register(data.email, data.password);
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
+    }
   }
 
-  @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
-    return this.authService.login(body.email, body.password);
+  @MessagePattern({ cmd: 'login_user' })
+  async login(@Payload() data: { email: string; password: string }) {
+    try {
+      return await this.authService.login(data.email, data.password);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   }
 }

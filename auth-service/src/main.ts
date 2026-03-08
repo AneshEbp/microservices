@@ -21,6 +21,6 @@ async function bootstrap() {
     },
   );
   await app.listen();
-  console.log('Product microservice is running on TCP 4000');
+  console.log('Auth microservice is running on TCP 4000');
 }
 bootstrap();

@@ -20,26 +20,30 @@ export class OrderService {
   ) {
     // call from product microservice
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const product = await firstValueFrom(
-      this.productClient.send({ cmd: 'get_product_by_id' }, productId),
-    );
+    try {
+      const product = await firstValueFrom(
+        this.productClient.send({ cmd: 'get_product_by_id' }, productId),
+      );
+      if (!product) {
+        console.error(`Product with ID ${productId} not found`);
+        throw new Error(`Product with ID ${productId} not found`);
+      }
+      // 2️⃣ Create order snapshot
+      const order = new this.orderModel({
+        userId,
+        productId,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        productName: product.name,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        price: product.price * quantity,
+        status: 'PENDING',
+      });
 
-    if (!product) {
-      throw new Error(`Product with ID ${productId} not found`);
+      return order.save();
+    } catch (error) {
+      console.error(`Error fetching product with ID ${productId}:`, error);
+      return null; // or throw an exception if you want to handle it differently
     }
-
-    // 2️⃣ Create order snapshot
-    const order = new this.orderModel({
-      userId,
-      productId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      productName: product.name,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      price: product.price * quantity,
-      status: 'PENDING',
-    });
-
-    return order.save();
   }
 
   // ------------------------------

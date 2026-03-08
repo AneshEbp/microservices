@@ -16,7 +16,7 @@ export class Order {
   price: number;
 
   @Prop()
-  status: number;
+  status: string; // e.g., PENDING, COMPLETED, CANCELLED
 }
 
 export type OrderDocument = HydratedDocument<Order>;

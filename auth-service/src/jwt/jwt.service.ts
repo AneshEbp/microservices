@@ -7,8 +7,8 @@ export class JwtWrapperService {
 
   // Sign a payload and return a token
   sign(payload: Record<string, any>, expiresIn = '1h'): string {
-    const options: JwtSignOptions = { expiresIn: 3600 };
-    return this.jwtService.sign(payload, options);
+    // const options: JwtSignOptions = { expiresIn: 3600 };
+    return this.jwtService.sign(payload);
   }
 
   // Verify a token, type T must extend object

@@ -17,49 +17,59 @@ export class AuthService {
   ) {}
 
   async register(email: string, password: string) {
-    // Check if user already exists
-    const existingUser = await this.authModel.findOne({ email });
-    if (existingUser) {
-      throw new ConflictException('Email already registered');
+    try {
+      // Check if user already exists
+      const existingUser = await this.authModel.findOne({ email });
+      if (existingUser) {
+        throw new ConflictException('Email already registered');
+      }
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Create user
+      const user = new this.authModel({
+        email,
+        password: hashedPassword,
+      });
+
+      await user.save();
+
+      // Generate JWT
+      const payload = { id: user._id, email: user.email };
+      const token = this.jwtService.sign(payload);
+
+      return { user: { id: user._id, email: user.email }, token };
+    } catch (error) {
+      console.error('Register service error:', error);
+      throw error;
     }
-
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const user = new this.authModel({
-      email,
-      password: hashedPassword,
-    });
-
-    await user.save();
-
-    // Generate JWT
-    const payload = { id: user._id, email: user.email };
-    const token = this.jwtService.sign(payload);
-
-    return { user: { id: user._id, email: user.email }, token };
   }
 
   // Login user
   async login(email: string, password: string) {
-    // Find user
-    const user = await this.authModel.findOne({ email });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    try {
+      // Find user
+      const user = await this.authModel.findOne({ email });
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // Compare password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // Generate JWT
+      const payload = { id: user._id, email: user.email };
+      const token = this.jwtService.sign(payload);
+
+      return { user: { id: user._id, email: user.email }, token };
+    } catch (error) {
+      console.error('Login service error:', error);
+      throw error;
     }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Generate JWT
-    const payload = { id: user._id, email: user.email };
-    const token = this.jwtService.sign(payload);
-
-    return { user: { id: user._id, email: user.email }, token };
   }
 }
